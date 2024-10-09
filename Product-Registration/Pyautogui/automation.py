@@ -3,7 +3,7 @@ import time
 import pandas
 import keyboard
 
-pyautogui.PAUSE = 0.3
+pyautogui.PAUSE = 1
 
 pyautogui.press('win')
 pyautogui.write('chrome')
@@ -33,7 +33,7 @@ pyautogui.click(x=345, y=154)
 pyautogui.click(x=422, y=201)
 
 # Lendo o arquivo de produtos no formato CSV 
-table = pandas.read_csv("Product-Registration/produtos.csv")
+table = pandas.read_csv("C:/Users/gazzo/OneDrive/Documents/GitHub/Automations_Python/Product-Registration/Pyautogui/produtos.csv")
 print(table)
 
 for row in table.index:
