@@ -15,7 +15,7 @@ def wait_element(driver, by_type, selector, timeout=30):
     )
 
 def find_add(driver):
-    add = wait_element(driver, By.CSS_SELECTOR, ".btn.btn-cl.btn-info.btn-sm.ng-scope")
+    add = wait_element(driver, By.XPATH, "//button[@tooltip='Adicionar']")
     add.click()
 
 def find_save_and_quit(driver):
