@@ -1,8 +1,9 @@
 import time
 import restricted
-from functions import initialize_driver
+import pandas as pd
+from selenium_actions import initialize_driver
 from system import System
-from warehouse import Registrations
+from warehouse import Registrations, Product
 
 """
 url = input("Informe a URL do sistema: ")
@@ -15,20 +16,25 @@ def main():
     username = restricted.username
     password = restricted.password
 
+    warehouse_registrations_data = pd.read_csv("C:/Users/gazzo/OneDrive/Documents/GitHub/Automations_Python/Product-Registration/Selenium/database/almoxarifado_cadastros.csv")
+    warehouse_products_data = pd.read_csv("C:/Users/gazzo/OneDrive/Documents/GitHub/Automations_Python/Product-Registration/Selenium/database/almoxarifado_produtos.csv")
+
     driver = initialize_driver()
     system = System(driver)
-    registrations = Registrations(driver)
+    registrations = Registrations(driver, warehouse_registrations_data)
+    product = Product(driver, warehouse_products_data)
 
     try:
         driver.get(url)
         system.login(username, password)
-
-        registrations.register_delivery_group()
-
-        registrations.register_item_group()
-
+        
+        registrations.register_delivery_groups()
+        registrations.register_item_groups()
         registrations.register_ingredients()    
-    
+        
+        time.sleep(3)
+        product.register_all_products()
+        
         time.sleep(15)
 
     except Exception as e:

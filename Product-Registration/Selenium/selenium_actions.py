@@ -14,14 +14,15 @@ def wait_element(driver, by_type, selector, timeout=30):
         EC.visibility_of_element_located((by_type, selector))
     )
 
-def find_add(driver):
-    add = wait_element(driver, By.XPATH, "//button[@tooltip='Adicionar']")
-    add.click()
+def wait_select_element(driver, by_type, selector, timeout=30):
+    return WebDriverWait(driver, timeout).until(
+        EC.element_to_be_clickable((by_type, selector))
+    )
 
-def find_save_and_quit(driver):
-    save_and_quit = wait_element(driver, By.XPATH, "//button[text()='Salvar e fechar']")
-    save_and_quit.click()
+def click_element_add(driver):
+    element_add = wait_element(driver, By.XPATH, "//button[@tooltip='Adicionar']")
+    element_add.click()
 
-def format_price(price):
-    price = float(price.replace(',', '.'))
-    return f'{price:.2f}'.replace('.', ',')
+def click_element_save_and_quit(driver):
+    element_save_and_quit = wait_element(driver, By.XPATH, "//button[text()='Salvar e fechar']")
+    element_save_and_quit.click()

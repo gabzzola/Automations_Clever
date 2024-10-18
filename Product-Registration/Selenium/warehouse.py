@@ -2,95 +2,218 @@ import time
 import pandas as pd
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from functions import wait_element, find_add, find_save_and_quit, format_price
-
-warehouse_registrations_data = pd.read_csv("C:/Users/gazzo/OneDrive/Documents/GitHub/Automations_Python/Product-Registration/Selenium/database/almoxarifado_cadastros.csv")
-print(warehouse_registrations_data)
+from selenium.webdriver.support.ui import Select
+from selenium_actions import wait_element, wait_select_element, click_element_add, click_element_save_and_quit
+from formations import format_price
 
 class Warehouse:
     def __init__(self, driver):
         self.driver = driver 
     
-    def localize_warehouse(self):
-        warehouse = wait_element(self.driver, By.CSS_SELECTOR, ".fa.fa-lg.fa-fw.fa-cubes")
-        warehouse.click()
+    def click_element_warehouse(self):
+        element_warehouse = wait_element(self.driver, By.CSS_SELECTOR, ".fa.fa-lg.fa-fw.fa-cubes")
+        element_warehouse.click()
 
 class Registrations(Warehouse):
-    def localize_registrations(self):
-        registrations = wait_element(self.driver, By.XPATH, "//span[contains(text(), 'Almoxarifado')]/ancestor::li//span[contains(text(), 'Cadastros')]")
-        registrations.click()
-    
-    def localize_delivery_group(self):
-        delivery_group = wait_element(self.driver, By.CSS_SELECTOR, "a[href='#/estoque/grupos']")
-        delivery_group.click()
+    def __init__(self, driver, warehouse_registrations_data):
+        super().__init__(driver)
+        self.warehouse_registrations_data = warehouse_registrations_data
 
-    def localize_item_group(self):
-        item_group = wait_element(self.driver, By.CSS_SELECTOR, "a[href='#/estoque/grupo_item']")
-        item_group.click()
+    def click_element_registrations(self):
+        element_registrations = wait_element(self.driver, By.XPATH, "//span[contains(text(), 'Almoxarifado')]/ancestor::li//span[contains(text(), 'Cadastros')]")
+        element_registrations.click()
 
-    def localize_ingredients(self):
-        ingredients = wait_element(self.driver, By.CSS_SELECTOR, "a[href='#/estoque/insumos']")
-        ingredients.click()
+    def click_element_delivery_group(self):
+        element_delivery_group = wait_element(self.driver, By.CSS_SELECTOR, "a[href='#/estoque/grupos']")
+        element_delivery_group.click()
 
-    def register_delivery_group(self):
-        self.localize_warehouse()
-        self.localize_registrations()
-        self.localize_delivery_group()
+    def click_element_item_group(self):
+        element_item_group = wait_element(self.driver, By.CSS_SELECTOR, "a[href='#/estoque/grupo_item']")
+        element_item_group.click()
 
-        registered_groups = set()
+    def click_element_ingredients(self):
+        element_ingredients = wait_element(self.driver, By.CSS_SELECTOR, "a[href='#/estoque/insumos']")
+        element_ingredients.click()
 
-        for row in warehouse_registrations_data.itertuples():
-            delivery_group = row.grupo_delivery
+    def register_delivery_groups(self):
+        self.click_element_warehouse()
+        self.click_element_registrations()
+        self.click_element_delivery_group()
+        self.logic_register_groups(self.warehouse_registrations_data, "grupo_delivery")
 
-            if not pd.isna(delivery_group) and delivery_group not in registered_groups:
-                time.sleep(1)
-                find_add(self.driver)
-                description = wait_element(self.driver, By.ID, "descricao")
-                description.send_keys(delivery_group)
-                find_save_and_quit(self.driver)
+    def register_item_groups(self):
+        self.click_element_warehouse()
+        self.click_element_registrations()
+        self.click_element_item_group()
+        self.logic_register_groups(self.warehouse_registrations_data, "grupo_item")
 
-    def register_item_group(self):
-        self.localize_warehouse()
-        self.localize_registrations()
-        self.localize_item_group()
-
-        registered_groups = set()
-
-        for row in warehouse_registrations_data.itertuples():
-            item_group = row.grupo_item
-            
-            if not pd.isna(item_group) and item_group not in registered_groups:
-                time.sleep(1)
-                find_add(self.driver)        
-                description = wait_element(self.driver, By.ID, "descricao")
-                description.send_keys(item_group)
-                find_save_and_quit(self.driver)
-                
-                registered_groups.add(item_group)
-    
     def register_ingredients(self):
-        self.localize_warehouse()
-        self.localize_registrations()
-        self.localize_ingredients()
+        self.click_element_warehouse()
+        self.click_element_registrations()
+        self.click_element_ingredients()
 
-        for row in warehouse_registrations_data.itertuples():
-            ingredients = row.insumo
+        for row in self.warehouse_registrations_data.itertuples():
+            ingredient = row.insumo
             price = row.valor_insumo
             
-            if ingredients:
+            if not pd.isna(ingredient): 
                 time.sleep(1)
-                find_add(self.driver)
-                ingredients_formatted = ingredients.upper()
-                description = wait_element(self.driver, By.ID, "descricao")
-                description.send_keys(ingredients_formatted + Keys.TAB)
+                click_element_add(self.driver)
+                ingredient_formatted = ingredient.upper()
+                element_description = wait_element(self.driver, By.ID, "descricao")
+                element_description.send_keys(ingredient_formatted + Keys.TAB)
 
-                if price:
+                if not pd.isna(price):
                     price_formatted = format_price(price)
-                    price = self.driver.switch_to.active_element
-                    price.send_keys(price_formatted)
-                find_save_and_quit(self.driver)
+                    element_price = self.driver.switch_to.active_element
+                    element_price.send_keys(price_formatted)
+                
+                click_element_save_and_quit(self.driver)
 
-class Products(Warehouse):
-    def localize_products(self):
-        products = wait_element(self.driver, By.CSS_SELECTOR, "a[href='#/estoque/produtos']")
-        products.click()
+    def logic_register_groups(self, df, column_item):
+        registered_items = set()
+        for row in df.itertuples():
+            item = getattr(row, column_item)
+
+            if not pd.isna(item) and item not in registered_items:
+                time.sleep(1)
+                click_element_add(self.driver)
+                element_description = wait_element(self.driver, By.ID, "descricao")
+                element_description.send_keys(item)
+                click_element_save_and_quit(self.driver)
+
+                registered_items.add(item)
+
+class Product(Warehouse):
+    def __init__(self, driver, warehouse_products_data):
+        super().__init__(driver)
+        self.warehouse_products_data = warehouse_products_data
+
+    def click_element_products(self):
+        element_products = wait_element(self.driver, By.CSS_SELECTOR, "a[href='#/estoque/produtos']")
+        element_products.click()
+
+    def click_element_order_data(self):
+        element_order_data = wait_element(self.driver, By.CSS_SELECTOR, "li[active='tabComanda']")
+        element_order_data.click()
+    
+    def click_element_add_inside_order_data(self):
+        element_add = self.driver.find_element(By.CSS_SELECTOR, ".btn.btn-cl.btn-info.btn-xs.btn-block.ng-scope")
+        element_add.click()
+
+    def register_all_products(self):
+        self.click_element_warehouse()
+        self.click_element_products()
+
+        for row in self.warehouse_products_data.itertuples():
+            self.register_product(row)
+
+    def register_product(self, row):
+        time.sleep(1)
+        click_element_add(self.driver)
+        self.product_module_details(row)
+        self.product_module_order_data(row)
+        click_element_save_and_quit(self.driver)
+    
+    def product_module_details(self, row):
+        self.code(row)
+        self.description(row)
+        self.observations(row)
+        self.price(row)
+        self.delivery_group(row)
+
+    def product_module_order_data(self, row):
+        self.click_element_order_data()
+        self.order_terminal(row)
+        self.delivery_terminal(row)
+        self.item_groups_and_ingredients(row)
+
+    def code(self, row):
+        element_code = wait_element(self.driver, By.ID, "codigo")
+        element_code.click()
+        
+        if not pd.isna(row.codigo) and isinstance(row.codigo, int):
+            element_code.send_keys(row.codigo)
+
+    def description(self, row):
+        element_description = self.driver.find_element(By.ID, "descricao")
+        element_description.click()
+
+        if not pd.isna(row.descricao_produto):
+            description = row.descricao_produto
+            description_formatted = str(description.upper())
+            element_description.send_keys(description_formatted)
+
+    def observations(self, row):
+        element_observations = self.driver.find_element(By.ID, "observacoes")
+        element_observations.click()
+
+        if not pd.isna(row.observacoes):
+            element_observations.send_keys(str(row.observacoes))
+
+    def price(self, row):
+        element_price = self.driver.find_element(By.ID, "valor")
+        element_price.click()
+
+        if not pd.isna(row.valor_de_venda):
+            price_formatted = format_price(row.valor_de_venda)
+            element_price.send_keys(price_formatted)
+
+    def delivery_group(self, row):
+        element_delivery_group = self.driver.find_element(By.CSS_SELECTOR, "#s2id_grupo_produto_id a.select2-choice.select2-default")
+        element_delivery_group.click()
+        
+        if not pd.isna(row.grupo_delivery):
+            element_delivery_group.send_keys(row.grupo_delivery)
+            time.sleep(4)
+            element_delivery_group.send_keys(Keys.ENTER)
+
+    def order_terminal(self, row):
+        element_order_terminal = wait_element(self.driver, By.CSS_SELECTOR, "#s2id_terminal_id a.select2-choice.select2-default")
+        element_order_terminal.click()
+
+        if not pd.isna(row.terminal_comanda):
+            element_order_terminal.send_keys(row.terminal_comanda)
+            time.sleep(4)
+            element_order_terminal.send_keys(Keys.ENTER)
+
+    def delivery_terminal(self, row):
+        element_delivery_terminal = self.driver.find_element(By.CSS_SELECTOR, "#s2id_delivery_terminal_id a.select2-choice.select2-default")
+        element_delivery_terminal.click()
+
+        if not pd.isna(row.terminal_delivery):
+            element_delivery_terminal.send_keys(row.terminal_delivery)
+            time.sleep(4)
+            element_delivery_terminal.send_keys(Keys.ENTER)
+
+    def item_groups_and_ingredients(self, row):
+        item_group = row.grupo_item
+        ingredient = row.insumo
+
+        if not pd.isna(item_group) and not pd.isna(ingredient):
+            group_formatted = item_group.replace(", ", ",")
+            ingredient_formatted = ingredient.replace(", ", ",")
+            
+            array_groups = group_formatted.split(',')
+            array_ingredients = ingredient_formatted.split(',')
+            
+            for item_group, ingredient in zip(array_groups, array_ingredients):
+                self.click_element_add_inside_order_data()
+                all_elements_item_groups = self.driver.find_elements(By.CSS_SELECTOR, "[id^='grupo_item']")
+                all_elements_ingredients = self.driver.find_elements(By.CSS_SELECTOR, "[id^='s2id_produto_id_insumo'] a.select2-choice.select2-default")
+                
+                if all_elements_item_groups and all_elements_ingredients:
+                    last_element_item_group = all_elements_item_groups[-1]
+                    last_element_ingredient = all_elements_ingredients[-1]
+
+                    element_item_group = Select(last_element_item_group)
+                    element_ingredient = last_element_ingredient
+
+                    wait_element(self.driver, By.CSS_SELECTOR, "[id^='grupo_item']")
+                    element_item_group.select_by_visible_text(item_group)
+
+                    wait_select_element(self.driver, By.CSS_SELECTOR, "[id^='s2id_produto_id_insumo'] a.select2-choice.select2-default")
+                    element_ingredient.click()
+                    element_ingredient.send_keys(ingredient)
+                    time.sleep(5)
+                    element_ingredient.send_keys(Keys.ENTER)
