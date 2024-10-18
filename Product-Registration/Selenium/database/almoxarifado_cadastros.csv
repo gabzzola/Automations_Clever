@@ -1,7 +1,7 @@
 grupo_delivery,grupo_item,insumo,valor_insumo
 Salgadas,Tamanho,Pequena,"19,7"
-Salgadas Especiais,Tamanho,Média,"25,7"
-Vegetarianas,Tamanho,Grande,"32,7"
-Doces,Tamanho panqueca especial,Pequena,"29,9"
-Bifes,Tamanho panqueca especial,Média,"35,7"
-,Tamanho panqueca especial,Grande,"42,7"
+Salgadas Especiais,Tamanho panqueca especial,Média,"25,7"
+Vegetarianas,,Grande,"32,7"
+Doces,,Pequena,"29,9"
+Bifes,,Média,"35,7"
+,,Grande,"42,7"
