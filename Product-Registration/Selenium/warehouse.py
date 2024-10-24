@@ -3,7 +3,7 @@ import pandas as pd
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
-from selenium_actions import wait_element, wait_select_element, click_element_add, click_element_save_and_quit
+from selenium_actions import wait_element_clickable, click_element_add, click_element_save_and_quit
 from formations import format_price
 
 class Warehouse:
@@ -11,7 +11,7 @@ class Warehouse:
         self.driver = driver 
     
     def click_element_warehouse(self):
-        element_warehouse = wait_element(self.driver, By.CSS_SELECTOR, ".fa.fa-lg.fa-fw.fa-cubes")
+        element_warehouse = wait_element_clickable(self.driver, By.CSS_SELECTOR, ".fa.fa-lg.fa-fw.fa-cubes")
         element_warehouse.click()
 
 class Registrations(Warehouse):
@@ -20,19 +20,19 @@ class Registrations(Warehouse):
         self.warehouse_registrations_data = warehouse_registrations_data
 
     def click_element_registrations(self):
-        element_registrations = wait_element(self.driver, By.XPATH, "//span[contains(text(), 'Almoxarifado')]/ancestor::li//span[contains(text(), 'Cadastros')]")
+        element_registrations = wait_element_clickable(self.driver, By.XPATH, "//span[contains(text(), 'Almoxarifado')]/ancestor::li//span[contains(text(), 'Cadastros')]")
         element_registrations.click()
 
     def click_element_delivery_group(self):
-        element_delivery_group = wait_element(self.driver, By.CSS_SELECTOR, "a[href='#/estoque/grupos']")
+        element_delivery_group = wait_element_clickable(self.driver, By.CSS_SELECTOR, "a[href='#/estoque/grupos']")
         element_delivery_group.click()
 
     def click_element_item_group(self):
-        element_item_group = wait_element(self.driver, By.CSS_SELECTOR, "a[href='#/estoque/grupo_item']")
+        element_item_group = wait_element_clickable(self.driver, By.CSS_SELECTOR, "a[href='#/estoque/grupo_item']")
         element_item_group.click()
 
     def click_element_ingredients(self):
-        element_ingredients = wait_element(self.driver, By.CSS_SELECTOR, "a[href='#/estoque/insumos']")
+        element_ingredients = wait_element_clickable(self.driver, By.CSS_SELECTOR, "a[href='#/estoque/insumos']")
         element_ingredients.click()
 
     def register_delivery_groups(self):
@@ -60,7 +60,7 @@ class Registrations(Warehouse):
                 time.sleep(1)
                 click_element_add(self.driver)
                 ingredient_formatted = ingredient.upper()
-                element_description = wait_element(self.driver, By.ID, "descricao")
+                element_description = wait_element_clickable(self.driver, By.ID, "descricao")
                 element_description.send_keys(ingredient_formatted + Keys.TAB)
 
                 if not pd.isna(price):
@@ -78,7 +78,7 @@ class Registrations(Warehouse):
             if not pd.isna(item) and item not in registered_items:
                 time.sleep(1)
                 click_element_add(self.driver)
-                element_description = wait_element(self.driver, By.ID, "descricao")
+                element_description = wait_element_clickable(self.driver, By.ID, "descricao")
                 element_description.send_keys(item)
                 click_element_save_and_quit(self.driver)
 
@@ -90,16 +90,16 @@ class Product(Warehouse):
         self.warehouse_products_data = warehouse_products_data
 
     def click_element_products(self):
-        element_products = wait_element(self.driver, By.CSS_SELECTOR, "a[href='#/estoque/produtos']")
+        element_products = wait_element_clickable(self.driver, By.CSS_SELECTOR, "a[href='#/estoque/produtos']")
         element_products.click()
 
     def click_element_order_data(self):
-        element_order_data = wait_element(self.driver, By.CSS_SELECTOR, "li[active='tabComanda']")
-        element_order_data.click()
+        element_order_data = wait_element_clickable(self.driver, By.CSS_SELECTOR, "li[active='tabComanda'] a")
+        self.driver.execute_script("arguments[0].click();", element_order_data)
     
     def click_element_add_inside_order_data(self):
-        element_add = self.driver.find_element(By.CSS_SELECTOR, ".btn.btn-cl.btn-info.btn-xs.btn-block.ng-scope")
-        element_add.click()
+        element_add = wait_element_clickable(self.driver, By.CSS_SELECTOR, ".btn.btn-cl.btn-info.btn-xs.btn-block.ng-scope")
+        self.driver.execute_script("arguments[0].click();", element_add)
 
     def register_all_products(self):
         self.click_element_warehouse()
@@ -129,7 +129,7 @@ class Product(Warehouse):
         self.item_groups_and_ingredients(row)
 
     def code(self, row):
-        element_code = wait_element(self.driver, By.ID, "codigo")
+        element_code = wait_element_clickable(self.driver, By.ID, "codigo")
         element_code.click()
         
         if not pd.isna(row.codigo) and isinstance(row.codigo, int):
@@ -165,26 +165,37 @@ class Product(Warehouse):
         
         if not pd.isna(row.grupo_delivery):
             element_delivery_group.send_keys(row.grupo_delivery)
-            time.sleep(4)
-            element_delivery_group.send_keys(Keys.ENTER)
+            try:
+                option = wait_element_clickable(self.driver, By.XPATH, f"//div[contains(text(), '{row.grupo_delivery}')]")
+                option.click()
+            except Exception as e:
+                print(f"Erro ao clicar na opção: {e}")
 
     def order_terminal(self, row):
-        element_order_terminal = wait_element(self.driver, By.CSS_SELECTOR, "#s2id_terminal_id a.select2-choice.select2-default")
+        element_order_terminal = wait_element_clickable(self.driver, By.CSS_SELECTOR, "#s2id_terminal_id a.select2-choice.select2-default")
         element_order_terminal.click()
 
         if not pd.isna(row.terminal_comanda):
-            element_order_terminal.send_keys(row.terminal_comanda)
-            time.sleep(4)
-            element_order_terminal.send_keys(Keys.ENTER)
+            order_terminal_formatted = row.terminal_comanda.upper()
+            element_order_terminal.send_keys(order_terminal_formatted)
+            try:
+                option = wait_element_clickable(self.driver, By.XPATH, f"//div[contains(text(), '{order_terminal_formatted}')]")
+                option.click()
+            except Exception as e:
+                print(f"Erro ao clicar na opção: {e}")
 
     def delivery_terminal(self, row):
         element_delivery_terminal = self.driver.find_element(By.CSS_SELECTOR, "#s2id_delivery_terminal_id a.select2-choice.select2-default")
         element_delivery_terminal.click()
 
         if not pd.isna(row.terminal_delivery):
-            element_delivery_terminal.send_keys(row.terminal_delivery)
-            time.sleep(4)
-            element_delivery_terminal.send_keys(Keys.ENTER)
+            delivery_terminal_formatted = row.terminal_delivery.upper()
+            element_delivery_terminal.send_keys(delivery_terminal_formatted)
+            try:
+                option = wait_element_clickable(self.driver, By.XPATH, f"//div[contains(text(), '{delivery_terminal_formatted}')]")
+                option.click()
+            except Exception as e:
+                print(f"Erro ao clicar na opção: {e}")
 
     def item_groups_and_ingredients(self, row):
         item_group = row.grupo_item
@@ -209,11 +220,18 @@ class Product(Warehouse):
                     element_item_group = Select(last_element_item_group)
                     element_ingredient = last_element_ingredient
 
-                    wait_element(self.driver, By.CSS_SELECTOR, "[id^='grupo_item']")
-                    element_item_group.select_by_visible_text(item_group)
+                    if wait_element_clickable(self.driver, By.CSS_SELECTOR, "[id^='grupo_item']"):
+                        element_item_group.select_by_visible_text(item_group)
 
-                    wait_select_element(self.driver, By.CSS_SELECTOR, "[id^='s2id_produto_id_insumo'] a.select2-choice.select2-default")
-                    element_ingredient.click()
-                    element_ingredient.send_keys(ingredient)
-                    time.sleep(5)
-                    element_ingredient.send_keys(Keys.ENTER)
+                    if wait_element_clickable(self.driver, By.CSS_SELECTOR, "[id^='s2id_produto_id_insumo'] a.select2-choice.select2-default"):
+                        time.sleep(2)
+                        element_ingredient.click()
+                        ingredient_formatted = str(ingredient.upper())
+                        input_search = wait_element_clickable(self.driver, By.CSS_SELECTOR, "input.select2-input.select2-focused")
+                        input_search.send_keys(ingredient_formatted)
+                        
+                        try:
+                            option = wait_element_clickable(self.driver, By.XPATH, f"//div[contains(text(), '{ingredient_formatted}')]")
+                            option.click()
+                        except Exception as e:
+                            print(f"Erro ao clicar na opção: {e}")
