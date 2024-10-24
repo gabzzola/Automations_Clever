@@ -15,9 +15,9 @@ def main():
     url = restricted.url
     username = restricted.username
     password = restricted.password
-
-    warehouse_registrations_data = pd.read_csv("C:/Users/gazzo/OneDrive/Documents/GitHub/Automations_Python/Product-Registration/Selenium/database/almoxarifado_cadastros.csv")
-    warehouse_products_data = pd.read_csv("C:/Users/gazzo/OneDrive/Documents/GitHub/Automations_Python/Product-Registration/Selenium/database/almoxarifado_produtos.csv")
+    
+    warehouse_registrations_data = pd.read_csv("C:/Users/gazzo/OneDrive/Documents/GitHub/Automations_Python/Product-Registration/Selenium/database/registrations_header.csv")
+    warehouse_products_data = pd.read_csv("C:/Users/gazzo/OneDrive/Documents/GitHub/Automations_Python/Product-Registration/Selenium/database/products_header.csv")
 
     driver = initialize_driver()
     system = System(driver)
@@ -32,10 +32,9 @@ def main():
         registrations.register_item_groups()
         registrations.register_ingredients()    
         
-        time.sleep(3)
         product.register_all_products()
         
-        time.sleep(15)
+        time.sleep(5)
 
     except Exception as e:
         print(f"Ocorreu um erro: {e}")
