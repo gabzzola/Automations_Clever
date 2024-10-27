@@ -35,12 +35,15 @@ class Neighborhood(Registrations):
                 click_element_add(self.driver)
                 element_description = wait_element_clickable(self.driver, By.ID, "descricao")
                 element_description.click()
-                element_description.send_keys(neighborhood_formatted + Keys.TAB)
+                element_description.send_keys(neighborhood_formatted)
+
+                element_show_delivery = self.driver.find_element(By.CSS_SELECTOR, "label[class='onoffswitch-label']")
+                element_show_delivery.click()
 
                 if not pd.isna(price):
                     price_formatted = format_price(price)
 
-                    element_price = self.driver.switch_to.active_element
+                    element_price = self.driver.find_element(By.CSS_SELECTOR, "input[placeholder='Valor MotoBoy']")
                     element_price.send_keys(price_formatted)
                 
                 click_element_save_and_quit(self.driver)
