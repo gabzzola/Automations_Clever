@@ -1,21 +1,13 @@
 import pandas as pd
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
+from modules.Registrations.main import Registrations
 from selenium_actions import wait_element_clickable, click_element_add, click_element_save_and_quit
 from formations import format_price
 
-class Registrations:
-    def __init__(self, driver):
-        self.driver = driver
-
-    def click_element_registrations(self):
-        element_registrations = wait_element_clickable(self.driver, By.CSS_SELECTOR, ".fa.fa-lg.fa-fw.fa-gears")
-        element_registrations.click()
-
 class Neighborhood(Registrations):
-    def __init__(self, driver, registrations_neighborhood_data):
+    def __init__(self, driver, dataframe):
         super().__init__(driver)
-        self.registrations_neighborhood_data = registrations_neighborhood_data
+        self.dataframe = dataframe
 
     def click_element_neighborhood(self):
         element_neighborhood = wait_element_clickable(self.driver, By.CSS_SELECTOR, "a[href='#/cliente/bairro']")
@@ -25,7 +17,7 @@ class Neighborhood(Registrations):
         self.click_element_registrations()
         self.click_element_neighborhood()
 
-        for row in self.registrations_neighborhood_data.itertuples():
+        for row in self.dataframe.itertuples():
             neighborhood = row.descricao_bairro
             price = row.valor_motoboy
 
