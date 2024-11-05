@@ -1,4 +1,5 @@
 import re
+import time
 import pandas as pd
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
@@ -20,6 +21,7 @@ class Product(Warehouse):
         self.click_element_products()
 
         for row in self.dataframe.itertuples():
+            time.sleep(3)
             self.register_product(row)
 
     def register_product(self, row):
@@ -40,8 +42,9 @@ class Product(Warehouse):
             item_formatted = row_column.upper()
             
             element.click()
-            element.send_keys(item_formatted)
-
+            input_search = wait_element_clickable(self.driver, By.CSS_SELECTOR, "input.select2-input.select2-focused")
+            input_search.send_keys(item_formatted)
+            
             try:
                 option = wait_element_clickable(self.driver, By.XPATH, f"//div[text()='{row_column}']")
                 option.click()
@@ -144,7 +147,8 @@ class ProductOrderData(Product):
                         ingredient_formatted = ingredient.upper()
 
                         element_ingredient.click()
-                        element_ingredient.send_keys(ingredient_formatted)
+                        input_search = wait_element_clickable(self.driver, By.CSS_SELECTOR, "input.select2-input.select2-focused")
+                        input_search.send_keys(ingredient_formatted)
                         
                         try:
                             option = wait_element_clickable(self.driver, By.XPATH, f"//div[text()='{ingredient_formatted}']")
