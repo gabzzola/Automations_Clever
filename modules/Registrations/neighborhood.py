@@ -1,4 +1,5 @@
 import pandas as pd
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from modules.Registrations.main import Registrations
 from selenium_actions import wait_element_clickable, click_element_add, click_element_save_and_quit
@@ -20,6 +21,7 @@ class Neighborhood(Registrations):
         for row in self.dataframe.itertuples():
             neighborhood = row.descricao_bairro
             price = row.valor_motoboy
+            city = row.cidade
 
             if not pd.isna(neighborhood):
                 neighborhood_formatted = neighborhood.upper()
@@ -38,4 +40,20 @@ class Neighborhood(Registrations):
                     element_price = self.driver.find_element(By.CSS_SELECTOR, "input[placeholder='Valor MotoBoy']")
                     element_price.send_keys(price_formatted)
                 
+                if not pd.isna(city):
+                    city_formatted = (city.upper()) + " - RS"
+
+                    element_city = self.driver.find_element(By.CSS_SELECTOR, "#s2id_cidade_id a.select2-choice.select2-default")
+                    element_city.click()
+
+                    input_search = wait_element_clickable(self.driver, By.CSS_SELECTOR, "input.select2-input.select2-focused")
+                    input_search.send_keys(city)
+                    
+                    try:
+                        option = wait_element_clickable(self.driver, By.XPATH, f"//div[text()='{city_formatted}']")
+                        option.click()
+
+                    except Exception as e:
+                        print(f"Erro ao clicar na opção: {e}")
+
                 click_element_save_and_quit(self.driver)
