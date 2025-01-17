@@ -46,7 +46,7 @@ class Product(Warehouse):
             input_search.send_keys(item_formatted)
             
             try:
-                option = wait_element_clickable(self.driver, By.XPATH, f"//div[text()='{row_column}']")
+                option = wait_element_clickable(self.driver, By.XPATH, f"//div[text()='{item_formatted}']")
                 option.click()
             except Exception as e:
                 print(f"Erro ao clicar na opção: {e}") 
@@ -54,6 +54,7 @@ class Product(Warehouse):
 class ProductDetails(Product):
     def register_product_details(self, row):
         self.code(row)
+        self.bars_code(row)
         self.description(row)
         self.observations(row)
         self.price(row)
@@ -65,6 +66,13 @@ class ProductDetails(Product):
         if not pd.isna(row.codigo) and isinstance(row.codigo, int):
             element_code.click()
             element_code.send_keys(row.codigo)
+
+    def bars_code(self, row):
+        element_code = wait_element_clickable(self.driver, By.ID, "codigo_barras")
+        
+        if not pd.isna(row.codigo_barras) and isinstance(row.codigo_barras, int):
+            element_code.click()
+            element_code.send_keys(row.codigo_barras)
     
     def description(self, row):
         element_description = self.driver.find_element(By.ID, "descricao")

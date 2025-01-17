@@ -2,6 +2,6 @@ __pycache__
 
 restricted.py
 
-almoxarifado_cadastros.csv
-almoxarifado_produtos.csv
-bairros.csv
+header_almoxarifado_cadastros.csv
+header_almoxarifado_produtos.csv
+header_bairros.csv
